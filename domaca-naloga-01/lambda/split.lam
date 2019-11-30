@@ -1,0 +1,13 @@
+LET REC split n =
+    LET REC map f = FUN sez ->
+    MATCH sez WITH 
+    | [] -> []
+    | x :: xs -> (f x) :: (map f xs)
+    IN
+    LET a = map (FUN x -> FST x) n
+    IN
+    LET b = map (FUN x -> SND x) n
+    IN
+    ({a, b})
+IN
+split (({3, 1}) :: ({2, 4}) :: [])

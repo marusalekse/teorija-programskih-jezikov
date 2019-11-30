@@ -1,0 +1,9 @@
+LET REC izracun x =
+    LET fact = REC fact n -> IF n = 0 THEN 1 ELSE n * fact (n - 1) 
+    IN
+    LET racunaj = REC racunaj n -> IF n = 0 THEN (fact x) ELSE (fact x) + (racunaj (n - 1)) 
+    IN
+    racunaj x
+IN 
+
+izracun 50
