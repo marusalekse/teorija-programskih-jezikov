@@ -47,11 +47,6 @@ let rec eval_exp = function
       let v1 = eval_exp e1
       and v2 = eval_exp e2
       in S.Pair (v1, v2)
-  (*| S.Fst (S.Pair(e1, e2)) ->  (*Pri tem se zanasam na smiselnost programov, ne znam boljše. Pri FST 1 bi se zaciklalo,*)
-      let v1 = eval_exp e1     (*bo pa boljše za predelati na lazy, saj ne bo rabil računati v2.*)
-      and v2 = eval_exp e2 
-      in v1
-  | S.Fst e -> eval_exp (S.Fst (eval_exp e)) MOGOCE VSEEN BOLS*)
   | S.Fst e ->
       let v = eval_exp e in
       begin match v with
@@ -75,9 +70,9 @@ let rec eval_exp = function
       begin match v with
       | S.Nil -> eval_exp e1
       | S.Cons (v1, v2) -> eval_exp (S.subst [(x, v1); (xs, v2)] e2 )
-      | _ -> failwith "Match lahko uporabis le na seznamu"
+      | _ -> failwith "List expected"
       end
-  | _ -> failwith "nepricakovan izraz"
+  | _ -> failwith "Unexpected expression"
 and eval_int e =
   match eval_exp e with
   | S.Int n -> n
@@ -85,7 +80,7 @@ and eval_int e =
 
 let rec is_value = function
   | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil -> true
-  | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _
+  | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _ -> false
   | S.IfThenElse _ | S.Apply _ | S.Fst _ | S.Snd _ | S.Match _ -> false
   | S.Pair (v1, v2) when (is_value v1 && is_value v2) -> true (* to bi blo lahko lepse *)
   | S.Cons (v1, v2) when (is_value v1 && is_value v2) -> true
@@ -93,11 +88,11 @@ let rec is_value = function
   | S.Cons _ -> false
 
 let rec step = function
-  | S.Int _ | S.RecLambda _ | S.Lambda _ | S.Var _ -> failwith "Expected a non-terminal expression3"
-  | S.Nil -> failwith "Expected a non-terminal expression2"
-  | S.Bool _ -> failwith "Expected a non-terminal expression1"
+  | S.Int _ | S.RecLambda _ | S.Lambda _ | S.Var _ -> failwith "Expected a non-terminal expression"
+  | S.Nil -> failwith "Expected a non-terminal expression"
+  | S.Bool _ -> failwith "Expected a non-terminal expression"
   | S.Pair (v1, v2) when (is_value v1 && is_value v2) -> failwith "Expected a non-terminal expression"
-  | S.Cons (v1, v2) when (is_value v1 && is_value v2) -> failwith "Expected a non-terminal expressione"
+  | S.Cons (v1, v2) when (is_value v1 && is_value v2) -> failwith "Expected a non-terminal expression"
   | S.Plus (S.Int n1, S.Int n2) -> S.Int (n1 + n2)
   | S.Plus (S.Int n1, e2) -> S.Plus (S.Int n1, step e2)
   | S.Plus (e1, e2) -> S.Plus (step e1, e2)
@@ -139,7 +134,7 @@ let rec step = function
   | S.Match (S.Cons (v1, ev2), e1, x, xs, e2) when (is_value v1) -> S.Match (S.Cons (v1, step ev2), e1, x, xs, e2)
   | S.Match (S.Cons (ev1, ev2), e1, x, xs, e2) -> S.Match (S.Cons (step ev1, ev2), e1, x, xs, e2)
   | S.Match (e, e1, x, xs, e2) -> S.Match ( step e , e1, x, xs, e2) (*morda iz kaksne funkcije dobimo seznam*)
-  | _ -> failwith "nepricakovan izraz"
+  | _ -> failwith "Unexpected expression"
 
 let big_step e =
   let v = eval_exp e in

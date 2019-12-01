@@ -1,7 +1,7 @@
 LET REC slaba n =  
     LET fact = REC fact n -> IF n = 0 THEN 1 ELSE n * fact (n - 1)
     IN
-    LET fak = fact (n * 1000000)
+    LET fak = fact (n * 100)
     IN
     10
 IN 

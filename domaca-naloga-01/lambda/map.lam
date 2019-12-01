@@ -3,4 +3,5 @@ LET REC map f = FUN sez ->
     | [] -> []
     | x :: xs -> (f x) :: (map f xs)
 IN
-map (FUN x -> x * 10) (1 :: 2 :: [])
+
+map (FUN x -> (x * 10)) (1 :: [])

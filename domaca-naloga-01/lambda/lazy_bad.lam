@@ -1,4 +1,4 @@
-LET REC izracun x =
+LET REC slaba x =
     LET fact = REC fact n -> IF n = 0 THEN 1 ELSE n * fact (n - 1) 
     IN
     LET racunaj = REC racunaj n -> IF n = 0 THEN (fact x) ELSE (fact x) + (racunaj (n - 1)) 
@@ -6,4 +6,4 @@ LET REC izracun x =
     racunaj x
 IN 
 
-izracun 50
+slaba 50
