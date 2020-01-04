@@ -90,7 +90,7 @@ let rec occurs a = function
   | S.ParamTy a' -> a = a'
   | S.IntTy | S.BoolTy -> false
   | S.ArrowTy (t1, t2) -> occurs a t1 || occurs a t2
-  | S.ProdTy (t1, t2) -> occurs a t1 || occurs a t2  novo *)
+  | S.ProdTy (t1, t2) -> occurs a t1 || occurs a t2
   | S.ListTy t -> occurs a t     
 
 
@@ -107,9 +107,13 @@ let rec solve sbst = function
   | (t, S.ParamTy a) :: eqs when not (occurs a t) ->
       let sbst' = add_subst a t sbst in
       solve sbst' (subst_equations sbst' eqs)
+  | (S.ProdTy (t1, t1'), S.ProdTy (t2, t2')) :: eqs ->  (* spet malo po vzorcu, poglej na koncu *)
+      solve sbst ((t1, t2) :: (t1', t2') :: eqs)
+  | (S.ListTy t1, S.ListTy t2) :: eqs ->
+      solve sbst ((t1, t2) :: eqs)
   | (t1, t2) :: _ ->
       failwith ("Cannot solve " ^ S.string_of_ty t1 ^ " = " ^ S.string_of_ty t2)
-(* manjka *)
+
 
 
 let rec renaming sbst = function
