@@ -42,7 +42,35 @@ let rec infer_exp ctx = function
       and a = fresh_ty ()
       in
       a, [(t1, S.ArrowTy (t2, a))] @ eqs1 @ eqs2
-
+  |S.Pair (e1, e2) ->
+      let t1, eqs1 = infer_exp ctx e1
+      and t2, eqs2 = infer_exp ctx e2 in
+      S.ProdTy (t1, t2), eqs1 @ eqs2
+  |S.Fst (e) ->
+      let t1, eqs = infer_exp ctx e 
+      and a = fresh_ty ()
+      and b = fresh_ty () in
+      a, [(t1, S.ProdTy (a, b))] @ eqs 
+  |S.Snd (e) ->
+      let t1, eqs = infer_exp ctx e 
+      and a = fresh_ty ()
+      and b = fresh_ty () in
+      b, [(t1, S.ProdTy (a, b))] @ eqs
+  |S.Nil ->
+      let a = fresh_ty () in
+      S.ListTy a, []
+  |S.Cons (e, es) ->
+      let t1, eqs1 = infer_exp ctx e
+      and t2, eqs2 = infer_exp ctx es in
+      S.ListTy t1, [(S.ListTy t1, t2)] @ eqs1 @ eqs2
+  |S.Match (e1, e2, x, xs, e3) ->  (* nimam napisanega pravila, preveri se enkrat.*)
+      let t1, eqs1 = infer_exp ctx e1
+      and t2, eqs2 = infer_exp ctx e2 
+      and a = fresh_ty ()  (* a rabmo kle locen a in b k v bistvu je v istem kontekstu*)
+      and b = fresh_ty () in
+      let ctx' = (xs, b) :: (x, a) :: ctx in
+      let t3, eqs3 = infer_exp ctx' e3 in
+      t2, [(t2, t3); (t1, b); (t1, S.ListTy a)] @ eqs1 @ eqs2 @ eqs3
 
 
 let subst_equations sbst =
@@ -62,6 +90,8 @@ let rec occurs a = function
   | S.ParamTy a' -> a = a'
   | S.IntTy | S.BoolTy -> false
   | S.ArrowTy (t1, t2) -> occurs a t1 || occurs a t2
+  | S.ProdTy (t1, t2) -> occurs a t1 || occurs a t2  novo *)
+  | S.ListTy t -> occurs a t     
 
 
 let rec solve sbst = function
@@ -79,6 +109,7 @@ let rec solve sbst = function
       solve sbst' (subst_equations sbst' eqs)
   | (t1, t2) :: _ ->
       failwith ("Cannot solve " ^ S.string_of_ty t1 ^ " = " ^ S.string_of_ty t2)
+(* manjka *)
 
 
 let rec renaming sbst = function
@@ -90,7 +121,7 @@ let rec renaming sbst = function
   | S.ArrowTy (t1, t2) ->
       let sbst' = renaming sbst t1 in
       renaming sbst' t2
-
+(* manjka *)
 
 let infer e =
   let t, eqs = infer_exp [] e in
