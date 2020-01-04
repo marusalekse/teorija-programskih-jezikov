@@ -121,7 +121,11 @@ let rec renaming sbst = function
   | S.ArrowTy (t1, t2) ->
       let sbst' = renaming sbst t1 in
       renaming sbst' t2
-(* manjka *)
+  | S.ProdTy (t1, t2) ->  (* to je samo po vzorcu, poglej na koncu... *)
+      let sbst' = renaming sbst t1 in
+      renaming sbst' t2
+  | S.ListTy t -> renaming sbst t
+
 
 let infer e =
   let t, eqs = infer_exp [] e in
