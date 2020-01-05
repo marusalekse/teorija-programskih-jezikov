@@ -502,14 +502,12 @@ begin
         }
     },
     case of.pair {
-        cases H_ih_a empty, --razdeli na konstruktorje.
-        case or.inl { -- v primeru da je e1 vrednost
+        cases H_ih_a empty, 
+        case or.inl { 
             cases H_ih_a_1 empty,
-            case or.inl { -- zdaj sta e1 in e2 vrednosti, torej e1*e2 vrednost
-                left, --dokazala bom levi ali (da e1 * e2 vrednost)
-                apply value.pair, -- samo se mormo pokazat za e1 in e2 loceno
-                assumption, -- lahko kar poisce ce to ze ima
-                assumption,
+            case or.inl { 
+                left, 
+                exact (value.pair h h_1) --na ta nacin bi bilo krajse..
             },
             case or.inr {
                 cases h_1 with e_2 H_2_step,
@@ -531,9 +529,9 @@ begin
     case of.fst{
         cases H_ih empty,
         case or.inl {
+            right,
             cases H_a,
             case of.pair{
-                right,
                 cases h,
                 existsi H_a_e1,
                 apply step.fst_beta,
@@ -554,9 +552,9 @@ begin
     case of.snd{
         cases H_ih empty,
         case or.inl {
+            right,
             cases H_a,
             case of.pair{
-                right,
                 cases h,
                 existsi H_a_e2,
                 apply step.snd_beta,
@@ -605,27 +603,18 @@ begin
         cases H_ih_a empty,
         case or.inl {
             cases H_a,
+            case of.var --a je to manjkal..
+                {rw ←empty at H_a_a, cases H_a_a},
             case of.nil {
                 right,
-                cases h,
+                cases h with e_1 H_1_step,
                 existsi H_e1,
                 apply step.list_match_nil
             },
             case of.cons {
-                sorry
-                /-
-                cases H_ih_a_1 empty,
                 right,
-                existsi (subst H_a_x H_e2 H_a_e),
-                apply step.app_beta,
-                assumption,
-                right,
-                cases h_1,
-                existsi (tm.app (tm.lam H_a_x H_a_e) h_1_w),
-                eapply step.app2,
-                exact value.lam,
-                assumption
-                -/
+                existsi (subst H_x H_a_e (subst H_xs H_a_es H_e2)),
+                apply step.list_match_cons
             },
             repeat {cases h},
         
@@ -636,13 +625,6 @@ begin
             existsi (tm.list_match e_1 H_e1 H_x H_xs H_e2),
             apply step.list_match_step,
             assumption
-            /-
-            cases h with e_1 H_1_step,
-            right,
-            existsi (tm.cons e_1 H_es),
-            apply step.cons1,
-            assumption,
-            -/
         },
     },
 end
