@@ -1,0 +1,7 @@
+LET narobe = FUN x ->
+    LET a1 = TRUE :: [] IN
+    LET a2 = {3, 3} IN
+    IF a1 a2 THEN TRUE ELSE FALSE
+IN
+
+narobe 3
