@@ -295,7 +295,8 @@ lemma weakening {Γ e A x B} :
     of Γ e A -> of (ctx.cons Γ x B) e A
 :=
 begin
-    sorry
+    sorry 
+    /- DOPOLNI 1 -/
 end
 
 
@@ -342,7 +343,70 @@ begin
         cases Hof,
         apply Hof_a_2
     },
-    repeat {sorry},
+    case step.pair2 {
+        cases Hof,
+        apply of.pair,
+        apply Hof_a,
+        apply Hstep_ih Hof_a_1
+    },
+    case step.pair1 {
+        cases Hof,
+        apply of.pair,
+        apply Hstep_ih Hof_a,
+        apply Hof_a_1
+    },
+    case step.fst_step {
+        cases Hof,
+        apply of.fst,
+        apply Hstep_ih Hof_a,
+    },
+    case step.snd_step {
+        cases Hof,
+        apply of.snd,
+        apply Hstep_ih Hof_a,
+    },
+    case step.cons1 {
+        cases Hof,
+        apply of.cons,
+        apply Hstep_ih Hof_a,
+        apply Hof_a_1,
+    },
+    case step.cons2 {
+        cases Hof,
+        apply of.cons,
+        apply Hof_a,
+        apply Hstep_ih Hof_a_1
+    },
+    case step.list_match_step {
+        cases Hof,
+        apply of.list_match,
+        apply Hstep_ih Hof_a,
+        apply Hof_a_1,
+        apply Hof_a_2
+    },
+    case step.list_match_nil {
+        cases Hof,
+        apply Hof_a_1
+    },
+    case step.fst_beta {
+        cases Hof,
+        cases Hof_a,
+        apply Hof_a_a
+    },
+    case step.snd_beta {
+        cases Hof,
+        cases Hof_a,
+        apply Hof_a_a_1
+    },
+    case step.list_match_cons {
+        sorry
+    },
+/-
+| list_match_cons {v vs e1 x xs e2} :
+    step 
+      (tm.list_match (tm.cons v vs) e1 x xs e2) 
+      (subst x v (subst xs vs e2))-/
+    /- DOPOLNI 2 -/
 end
 
 
@@ -352,7 +416,7 @@ theorem progress {e A} :
 :=
 begin
     generalize empty : ctx.nil = Γ,
-    intros H,
+    intros H, --doda vse leve strani in univerzalne kvantifikatorje
     induction H,
     case of.var {
         rewrite ←empty at H_a,
@@ -402,6 +466,10 @@ begin
         left,
         exact value.true
     },
+    case of.nil {
+        left,
+        exact value.nil
+    },
     case of.false {
         left,
         exact value.false
@@ -432,6 +500,149 @@ begin
             existsi (tm.if_then_else h_w H_e1 H_e2),
             exact (step.if_then_else h_h),
         }
-  },
-  repeat {sorry},
+    },
+    case of.pair {
+        cases H_ih_a empty, --razdeli na konstruktorje.
+        case or.inl { -- v primeru da je e1 vrednost
+            cases H_ih_a_1 empty,
+            case or.inl { -- zdaj sta e1 in e2 vrednosti, torej e1*e2 vrednost
+                left, --dokazala bom levi ali (da e1 * e2 vrednost)
+                apply value.pair, -- samo se mormo pokazat za e1 in e2 loceno
+                assumption, -- lahko kar poisce ce to ze ima
+                assumption,
+            },
+            case or.inr {
+                cases h_1 with e_2 H_2_step,
+                right,
+                existsi (tm.pair H_e1 e_2),
+                apply step.pair2,
+                assumption,
+                assumption,
+            },
+        },
+        case or.inr {
+            cases h with e_1 H_1_step,
+            right,
+            existsi (tm.pair e_1 H_e2),
+            apply step.pair1,
+            assumption,
+        },
+    },
+    case of.fst{
+        cases H_ih empty,
+        case or.inl {
+            cases H_a,
+            case of.pair{
+                right,
+                cases h,
+                existsi H_a_e1,
+                apply step.fst_beta,
+                apply value.pair,
+                assumption,
+                assumption,
+            },
+            repeat {cases h}
+        },
+        case or.inr {
+            cases h with e H_step,
+            right,
+            existsi (tm.fst e),
+            apply step.fst_step,
+            assumption,
+        },
+    },
+    case of.snd{
+        cases H_ih empty,
+        case or.inl {
+            cases H_a,
+            case of.pair{
+                right,
+                cases h,
+                existsi H_a_e2,
+                apply step.snd_beta,
+                apply value.pair,
+                assumption,
+                assumption,
+            },
+            repeat {cases h}
+        },
+        case or.inr {
+            cases h with e H_step,
+            right,
+            existsi (tm.snd e),
+            apply step.snd_step,
+            assumption,
+        },
+    },
+    case of.cons {
+        cases H_ih_a empty,
+        case or.inl {
+            cases H_ih_a_1 empty,
+            case or.inl {
+                left,
+                apply value.cons,
+                assumption,
+                assumption,
+            },
+            case or.inr {
+                cases h_1 with e_2 H_2_step,
+                right,
+                existsi (tm.cons H_e e_2),
+                apply step.cons2,
+                assumption,
+                repeat {assumption}
+           },
+        },
+        case or.inr {
+            cases h with e_1 H_1_step,
+            right,
+            existsi (tm.cons e_1 H_es),
+            apply step.cons1,
+            assumption,
+        },
+    },
+    case of.list_match {
+        cases H_ih_a empty,
+        case or.inl {
+            cases H_a,
+            case of.nil {
+                right,
+                cases h,
+                existsi H_e1,
+                apply step.list_match_nil
+            },
+            case of.cons {
+                sorry
+                /-
+                cases H_ih_a_1 empty,
+                right,
+                existsi (subst H_a_x H_e2 H_a_e),
+                apply step.app_beta,
+                assumption,
+                right,
+                cases h_1,
+                existsi (tm.app (tm.lam H_a_x H_a_e) h_1_w),
+                eapply step.app2,
+                exact value.lam,
+                assumption
+                -/
+            },
+            repeat {cases h},
+        
+        },
+        case or.inr {
+            cases h with e_1 H_1_step,
+            right,
+            existsi (tm.list_match e_1 H_e1 H_x H_xs H_e2),
+            apply step.list_match_step,
+            assumption
+            /-
+            cases h with e_1 H_1_step,
+            right,
+            existsi (tm.cons e_1 H_es),
+            apply step.cons1,
+            assumption,
+            -/
+        },
+    },
 end
