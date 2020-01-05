@@ -47,7 +47,7 @@ let rec infer_exp ctx = function
       and t2, eqs2 = infer_exp ctx e2 in
       S.ProdTy (t1, t2), eqs1 @ eqs2
   |S.Fst (e) ->
-      let t1, eqs = infer_exp ctx e 
+      let t1, eqs = infer_exp ctx e
       and a = fresh_ty ()
       and b = fresh_ty () in
       a, [(t1, S.ProdTy (a, b))] @ eqs 
@@ -62,15 +62,14 @@ let rec infer_exp ctx = function
   |S.Cons (e, es) ->
       let t1, eqs1 = infer_exp ctx e
       and t2, eqs2 = infer_exp ctx es in
-      S.ListTy t1, [(S.ListTy t1, t2)] @ eqs1 @ eqs2
+      S.ListTy t1, [(S.ListTy t1, t2)] @ eqs1 @ eqs2 (* t1 in t2 smo na vajah tako obrnili,zgoraj vseobratno, a je pomembno?*)
   |S.Match (e1, e2, x, xs, e3) ->  (* nimam napisanega pravila, preveri se enkrat.*)
       let t1, eqs1 = infer_exp ctx e1
       and t2, eqs2 = infer_exp ctx e2 
-      and a = fresh_ty ()  (* a rabmo kle locen a in b k v bistvu je v istem kontekstu*)
-      and b = fresh_ty () in
-      let ctx' = (xs, b) :: (x, a) :: ctx in
+      and a = fresh_ty () in  (* a bi rabla tud posebno b??*)
+      let ctx' = (xs, S.ListTy a) :: (x, a) :: ctx in (* a je pomembno spet kako x in xs?*)
       let t3, eqs3 = infer_exp ctx' e3 in
-      t2, [(t2, t3); (t1, b); (t1, S.ListTy a)] @ eqs1 @ eqs2 @ eqs3
+      t2, [(t2, t3); (t1, ListTy a)] @ eqs1 @ eqs2 @ eqs3
 
 
 let subst_equations sbst =
@@ -107,7 +106,7 @@ let rec solve sbst = function
   | (t, S.ParamTy a) :: eqs when not (occurs a t) ->
       let sbst' = add_subst a t sbst in
       solve sbst' (subst_equations sbst' eqs)
-  | (S.ProdTy (t1, t1'), S.ProdTy (t2, t2')) :: eqs ->  (* spet malo po vzorcu, poglej na koncu *)
+  | (S.ProdTy (t1, t1'), S.ProdTy (t2, t2')) :: eqs ->  
       solve sbst ((t1, t2) :: (t1', t2') :: eqs)
   | (S.ListTy t1, S.ListTy t2) :: eqs ->
       solve sbst ((t1, t2) :: eqs)
@@ -125,7 +124,7 @@ let rec renaming sbst = function
   | S.ArrowTy (t1, t2) ->
       let sbst' = renaming sbst t1 in
       renaming sbst' t2
-  | S.ProdTy (t1, t2) ->  (* to je samo po vzorcu, poglej na koncu... *)
+  | S.ProdTy (t1, t2) ->  
       let sbst' = renaming sbst t1 in
       renaming sbst' t2
   | S.ListTy t -> renaming sbst t

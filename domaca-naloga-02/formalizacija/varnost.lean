@@ -296,7 +296,6 @@ lemma weakening {Γ e A x B} :
 :=
 begin
     sorry 
-    /- DOPOLNI 1 -/
 end
 
 
@@ -399,14 +398,15 @@ begin
         apply Hof_a_a_1
     },
     case step.list_match_cons {
-        sorry
+        cases Hof,
+        cases Hof_a,
+        apply substitution,
+        assumption,
+        apply substitution,
+        repeat {assumption},
+        apply weakening,
+        assumption,
     },
-/-
-| list_match_cons {v vs e1 x xs e2} :
-    step 
-      (tm.list_match (tm.cons v vs) e1 x xs e2) 
-      (subst x v (subst xs vs e2))-/
-    /- DOPOLNI 2 -/
 end
 
 
