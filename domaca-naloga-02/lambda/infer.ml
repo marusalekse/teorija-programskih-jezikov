@@ -69,7 +69,7 @@ let rec infer_exp ctx = function
       and a = fresh_ty () in  (* a bi rabla tud posebno b??*)
       let ctx' = (xs, S.ListTy a) :: (x, a) :: ctx in (* a je pomembno spet kako x in xs?*)
       let t3, eqs3 = infer_exp ctx' e3 in
-      t2, [(t2, t3); (t1, ListTy a)] @ eqs1 @ eqs2 @ eqs3
+      t2, [(t2, t3); (t1, S.ListTy a)] @ eqs1 @ eqs2 @ eqs3
 
 
 let subst_equations sbst =
